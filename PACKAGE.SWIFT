@@ -1,11 +1,10 @@
-// swift-tools-version: 5.9
+// swift-tools-version:5.5
 import PackageDescription
- 
+
 let package = Package(
     name: "OfficialEaseKit",
     platforms: [
-        .iOS(.v16),
-        .macOS(.v13)
+        .iOS(.v15)
     ],
     products: [
         .library(
@@ -16,7 +15,7 @@ let package = Package(
     targets: [
         .target(
             name: "OfficialEaseKit",
-            path: "Sources/OfficialEaseKit"
+            path: "Sources"
         )
     ]
 )
