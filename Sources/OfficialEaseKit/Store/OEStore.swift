@@ -29,8 +29,8 @@ public final class OEStore: ObservableObject {
         do {
             let result: [Official] = try await api.list(entity: "RefUser")
             return result
-        } catch let err {
-            print("OEStore error: \(err.localizedDescription)")
+        } catch {
+            errorMsg = error.localizedDescription
             return []
         }
     }
@@ -39,8 +39,8 @@ public final class OEStore: ObservableObject {
         do {
             let result: [OEGame] = try await api.list(entity: "OEGame")
             return result
-        } catch let err {
-            print("OEStore error: \(err.localizedDescription)")
+        } catch {
+            errorMsg = error.localizedDescription
             return []
         }
     }
@@ -49,8 +49,8 @@ public final class OEStore: ObservableObject {
         do {
             let result: [OEAssignment] = try await api.list(entity: "OEAssignment")
             return result
-        } catch let err {
-            print("OEStore error: \(err.localizedDescription)")
+        } catch {
+            errorMsg = error.localizedDescription
             return []
         }
     }
@@ -61,8 +61,8 @@ public final class OEStore: ObservableObject {
         do {
             let created: Official = try await api.create(entity: "RefUser", body: o)
             [officials.app](https://officials.app)end(created)
-        } catch let err {
-            print("OEStore error: \(err.localizedDescription)")
+        } catch {
+            errorMsg = error.localizedDescription
         }
     }
 
@@ -74,8 +74,8 @@ public final class OEStore: ObservableObject {
             if let idx = officials.firstIndex(where: { $0.id == id }) {
                 officials[idx] = updated
             }
-        } catch let err {
-            print("OEStore error: \(err.localizedDescription)")
+        } catch {
+            errorMsg = error.localizedDescription
         }
     }
 
@@ -83,8 +83,8 @@ public final class OEStore: ObservableObject {
         do {
             try await api.delete(entity: "RefUser", id: id)
             officials.removeAll { $0.id == id }
-        } catch let err {
-            print("OEStore error: \(err.localizedDescription)")
+        } catch {
+            errorMsg = error.localizedDescription
         }
     }
 
@@ -94,8 +94,8 @@ public final class OEStore: ObservableObject {
         do {
             let created: OEGame = try await api.create(entity: "OEGame", body: g)
             [games.app](https://games.app)end(created)
-        } catch let err {
-            print("OEStore error: \(err.localizedDescription)")
+        } catch {
+            errorMsg = error.localizedDescription
         }
     }
 
@@ -107,8 +107,8 @@ public final class OEStore: ObservableObject {
             if let idx = games.firstIndex(where: { $0.id == id }) {
                 games[idx] = updated
             }
-        } catch let err {
-            print("OEStore error: \(err.localizedDescription)")
+        } catch {
+            errorMsg = error.localizedDescription
         }
     }
 
@@ -116,8 +116,8 @@ public final class OEStore: ObservableObject {
         do {
             try await api.delete(entity: "OEGame", id: id)
             games.removeAll { $0.id == id }
-        } catch let err {
-            print("OEStore error: \(err.localizedDescription)")
+        } catch {
+            errorMsg = error.localizedDescription
         }
     }
 
@@ -136,8 +136,8 @@ public final class OEStore: ObservableObject {
         do {
             let created: OEAssignment = try await api.create(entity: "OEAssignment", body: a)
             [assignments.app](https://assignments.app)end(created)
-        } catch let err {
-            print("OEStore error: \(err.localizedDescription)")
+        } catch {
+            errorMsg = error.localizedDescription
         }
     }
 
@@ -149,8 +149,8 @@ public final class OEStore: ObservableObject {
             if let idx = assignments.firstIndex(where: { $0.id == id }) {
                 assignments[idx] = updated
             }
-        } catch let err {
-            print("OEStore error: \(err.localizedDescription)")
+        } catch {
+            errorMsg = error.localizedDescription
         }
     }
 
@@ -158,8 +158,8 @@ public final class OEStore: ObservableObject {
         do {
             try await api.delete(entity: "OEAssignment", id: id)
             assignments.removeAll { $0.id == id }
-        } catch let err {
-            print("OEStore error: \(err.localizedDescription)")
+        } catch {
+            errorMsg = error.localizedDescription
         }
     }
 
