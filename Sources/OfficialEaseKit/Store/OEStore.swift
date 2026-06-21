@@ -19,12 +19,12 @@ public final class OEStore: ObservableObject {
    public func loadAll() async {
        isLoading = true
        errorMsg  = nil
-       async let off:  [Official]     = (try? api.list(entity: "RefUser"))      ?? []
-       async let gm:   [OEGame]       = (try? api.list(entity: "OEGame"))       ?? []
-       async let asgn: [OEAssignment] = (try? api.list(entity: "OEAssignment")) ?? []
-       officials   = await off
-       games       = await gm
-       assignments = await asgn
+       let off:  [Official]     = (try? api.list(entity: "RefUser"))      ?? []
+       let gm:   [OEGame]       = (try? api.list(entity: "OEGame"))       ?? []
+       let asgn: [OEAssignment] = (try? api.list(entity: "OEAssignment")) ?? []
+       officials   = off
+       games       = gm
+       assignments = asgn
        isLoading   = false
    }
  

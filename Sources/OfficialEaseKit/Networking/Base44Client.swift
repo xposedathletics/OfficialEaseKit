@@ -13,7 +13,7 @@ public struct APIItemResponse<T: Decodable>: Decodable {
 public final class Base44Client: Sendable {
  
    public static let shared = Base44Client()
-   public var baseURL: String = "https://leroy-jones-app-bcffbf7f.base44.app/api"
+   public let baseURL: String = "https://leroy-jones-app-bcffbf7f.base44.app/api"
    private let session = URLSession.shared
  
    public init() {}
