@@ -17,15 +17,15 @@ public final class OEStore: ObservableObject {
  
    // MARK: - Load All
    public func loadAll() async {
-       isLoading = true
-       errorMsg  = nil
-       let off:  [Official]     = (try? await api.list(entity: "RefUser"))      ?? []
-       let gm:   [OEGame]       = (try? await api.list(entity: "OEGame"))       ?? []
-       let asgn: [OEAssignment] = (try? await api.list(entity: "OEAssignment")) ?? []
-       officials   = off
-       games       = gm
-       assignments = asgn
-       isLoading   = false
+    isLoading = true
+    errorMsg  = nil
+    let off:  [Official]     = (try? await api.list(entity: "RefUser"))      ?? []
+    let gm:   [OEGame]       = (try? await api.list(entity: "OEGame"))       ?? []
+    let asgn: [OEAssignment] = (try? await api.list(entity: "OEAssignment")) ?? []
+    officials   = off
+    games       = gm
+    assignments = asgn
+    isLoading   = false
    }
  
    // MARK: - Officials
