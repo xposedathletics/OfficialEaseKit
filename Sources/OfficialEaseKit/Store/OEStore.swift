@@ -19,106 +19,57 @@ public final class OEStore: ObservableObject {
     public func loadAll() async {
         isLoading = true
         errorMsg  = nil
-        officials   = await fetchOfficials()
-        games       = await fetchGames()
-        assignments = await fetchAssignments()
+        officials   = await safeList(entity: "RefUser")
+        games       = await safeList(entity: "OEGame")
+        assignments = await safeList(entity: "OEAssignment")
         isLoading   = false
     }
 
-    private func fetchOfficials() async -> [Official] {
-        do {
-            let result: [Official] = try await api.list(entity: "RefUser")
-            return result
-        } catch {
-            errorMsg = error.localizedDescription
+    private func safeList<T: Decodable>(entity: String) async -> [T] {
+        guard let result = try? await api.list(entity: entity) as [T] else {
             return []
         }
-    }
-
-    private func fetchGames() async -> [OEGame] {
-        do {
-            let result: [OEGame] = try await api.list(entity: "OEGame")
-            return result
-        } catch {
-            errorMsg = error.localizedDescription
-            return []
-        }
-    }
-
-    private func fetchAssignments() async -> [OEAssignment] {
-        do {
-            let result: [OEAssignment] = try await api.list(entity: "OEAssignment")
-            return result
-        } catch {
-            errorMsg = error.localizedDescription
-            return []
-        }
+        return result
     }
 
     // MARK: - Officials
     public func addOfficial(_ o: Official) async {
         guard !o.full_name.isEmpty, !o.email.isEmpty else { return }
-        do {
-            let created: Official = try await api.create(entity: "RefUser", body: o)
-            [officials.app](https://officials.app)end(created)
-        } catch {
-            errorMsg = error.localizedDescription
-        }
+        guard let created = try? await api.create(entity: "RefUser", body: o) as Official else { return }
+        [officials.app](https://officials.app)end(created)
     }
 
     public func updateOfficialStatus(id: String, status: String) async {
         struct Patch: Codable { let status: String }
-        do {
-            let updated: Official = try await api.update(
-                entity: "RefUser", id: id, body: Patch(status: status))
-            if let idx = officials.firstIndex(where: { $0.id == id }) {
-                officials[idx] = updated
-            }
-        } catch {
-            errorMsg = error.localizedDescription
+        guard let updated = try? await api.update(entity: "RefUser", id: id, body: Patch(status: status)) as Official else { return }
+        if let idx = officials.firstIndex(where: { $0.id == id }) {
+            officials[idx] = updated
         }
     }
 
     public func deleteOfficial(id: String) async {
-        do {
-            try await api.delete(entity: "RefUser", id: id)
-            officials.removeAll { $0.id == id }
-        } catch {
-            errorMsg = error.localizedDescription
-        }
+        try? await api.delete(entity: "RefUser", id: id)
+        officials.removeAll { $0.id == id }
     }
 
     // MARK: - Games
     public func addGame(_ g: OEGame) async {
         guard !g.home_team.isEmpty, !g.date.isEmpty else { return }
-        do {
-            let created: OEGame = try await api.create(entity: "OEGame", body: g)
-            [games.app](https://games.app)end(created)
-        } catch {
-            errorMsg = error.localizedDescription
-        }
+        guard let created = try? await api.create(entity: "OEGame", body: g) as OEGame else { return }
+        [games.app](https://games.app)end(created)
     }
 
     public func updateGameStatus(id: String, status: String) async {
         struct Patch: Codable { let status: String }
-        do {
-            let updated: OEGame = try await api.update(
-                entity: "OEGame", id: id, body: Patch(status: status))
-            if let idx = games.firstIndex(where: { $0.id == id }) {
-                games[idx] = updated
-            }
-        } catch {
-            errorMsg = error.localizedDescription
+        guard let updated = try? await api.update(entity: "OEGame", id: id, body: Patch(status: status)) as OEGame else { return }
+        if let idx = games.firstIndex(where: { $0.id == id }) {
+            games[idx] = updated
         }
     }
 
     public func deleteGame(id: String) async {
-        do {
-            try await api.delete(entity: "OEGame", id: id)
-            games.removeAll { $0.id == id }
-        } catch {
-            errorMsg = error.localizedDescription
-        }
+        try? await api.delete(entity: "OEGame", id: id)
+        games.removeAll { $0.id == id }
     }
 
     // MARK: - Assignments
@@ -133,34 +84,21 @@ public final class OEStore: ObservableObject {
             status:        "Assigned",
             pay_amount:    game.pay_rate
         )
-        do {
-            let created: OEAssignment = try await api.create(entity: "OEAssignment", body: a)
-            [assignments.app](https://assignments.app)end(created)
-        } catch {
-            errorMsg = error.localizedDescription
-        }
+        guard let created = try? await api.create(entity: "OEAssignment", body: a) as OEAssignment else { return }
+        [assignments.app](https://assignments.app)end(created)
     }
 
     public func updateAssignmentStatus(id: String, status: String) async {
         struct Patch: Codable { let status: String }
-        do {
-            let updated: OEAssignment = try await api.update(
-                entity: "OEAssignment", id: id, body: Patch(status: status))
-            if let idx = assignments.firstIndex(where: { $0.id == id }) {
-                assignments[idx] = updated
-            }
-        } catch {
-            errorMsg = error.localizedDescription
+        guard let updated = try? await api.update(entity: "OEAssignment", id: id, body: Patch(status: status)) as OEAssignment else { return }
+        if let idx = assignments.firstIndex(where: { $0.id == id }) {
+            assignments[idx] = updated
         }
     }
 
     public func deleteAssignment(id: String) async {
-        do {
-            try await api.delete(entity: "OEAssignment", id: id)
-            assignments.removeAll { $0.id == id }
-        } catch {
-            errorMsg = error.localizedDescription
-        }
+        try? await api.delete(entity: "OEAssignment", id: id)
+        assignments.removeAll { $0.id == id }
     }
 
     // MARK: - Computed Helpers
