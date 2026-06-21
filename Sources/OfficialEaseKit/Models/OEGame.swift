@@ -54,7 +54,6 @@ public struct OEGame: Codable, Identifiable, Equatable, Sendable {
        self.created_date = created_date
    }
  
-   // MARK: - Computed
    public var formattedDate: String {
        let df = DateFormatter()
        df.dateFormat = "yyyy-MM-dd"

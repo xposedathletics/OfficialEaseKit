@@ -51,7 +51,6 @@ public struct Official: Codable, Identifiable, Equatable, Sendable {
        self.created_date = created_date
    }
  
-   // MARK: - Computed
    public var isActive: Bool { status == "active" }
  
    public var initials: String {

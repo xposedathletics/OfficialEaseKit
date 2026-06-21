@@ -39,7 +39,6 @@ public struct OEAssignment: Codable, Identifiable, Equatable, Sendable {
        self.created_date = created_date
    }
  
-   // MARK: - Computed
    public var statusColor: String {
        switch status {
        case "Accepted": return "1a7a3a"
