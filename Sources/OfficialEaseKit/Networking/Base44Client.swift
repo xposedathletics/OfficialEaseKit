@@ -1,0 +1,93 @@
+import Foundation
+ 
+// MARK: - Response Wrappers
+public struct APIListResponse<T: Decodable>: Decodable {
+   public let data: [T]?
+}
+ 
+public struct APIItemResponse<T: Decodable>: Decodable {
+   public let data: T?
+}
+ 
+// MARK: - Base44 API Client
+public final class Base44Client: Sendable {
+ 
+   public static let shared = Base44Client()
+   public var baseURL: String = "https://leroy-jones-app-bcffbf7f.base44.app/api"
+   private let session = URLSession.shared
+ 
+   public init() {}
+ 
+   // MARK: - LIST
+   public func list<T: Decodable>(
+       entity: String,
+       sort: String = "-created_date",
+       query: [String: String] = [:]
+   ) async throws -> [T] {
+       var components = URLComponents(string: "\(baseURL)/entities/\(entity)")!
+       var queryItems = [URLQueryItem(name: "sort", value: sort)]
+       for (key, value) in query {
+           queryItems.append(URLQueryItem(name: key, value: value))
+       }
+       components.queryItems = queryItems
+       guard let url = components.url else { throw URLError(.badURL) }
+       var req = URLRequest(url: url)
+       req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+       let (data, _) = try await session.data(for: req)
+       let decoded = try JSONDecoder().decode(APIListResponse<T>.self, from: data)
+       return decoded.data ?? []
+   }
+ 
+   // MARK: - GET
+   public func get<T: Decodable>(entity: String, id: String) async throws -> T {
+       guard let url = URL(string: "\(baseURL)/entities/\(entity)/\(id)") else {
+           throw URLError(.badURL)
+       }
+       var req = URLRequest(url: url)
+       req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+       let (data, _) = try await session.data(for: req)
+       let decoded = try JSONDecoder().decode(APIItemResponse<T>.self, from: data)
+       guard let item = decoded.data else { throw URLError(.cannotParseResponse) }
+       return item
+   }
+ 
+   // MARK: - CREATE
+   public func create<T: Codable>(entity: String, body: T) async throws -> T {
+       guard let url = URL(string: "\(baseURL)/entities/\(entity)") else {
+           throw URLError(.badURL)
+       }
+       var req = URLRequest(url: url)
+       req.httpMethod = "POST"
+       req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+       req.httpBody = try JSONEncoder().encode(body)
+       let (data, _) = try await session.data(for: req)
+       let decoded = try JSONDecoder().decode(APIItemResponse<T>.self, from: data)
+       guard let item = decoded.data else { throw URLError(.cannotParseResponse) }
+       return item
+   }
+ 
+   // MARK: - UPDATE
+   public func update<T: Codable>(entity: String, id: String, body: T) async throws -> T {
+       guard let url = URL(string: "\(baseURL)/entities/\(entity)/\(id)") else {
+           throw URLError(.badURL)
+       }
+       var req = URLRequest(url: url)
+       req.httpMethod = "PATCH"
+       req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+       req.httpBody = try JSONEncoder().encode(body)
+       let (data, _) = try await session.data(for: req)
+       let decoded = try JSONDecoder().decode(APIItemResponse<T>.self, from: data)
+       guard let item = decoded.data else { throw URLError(.cannotParseResponse) }
+       return item
+   }
+ 
+   // MARK: - DELETE
+   public func delete(entity: String, id: String) async throws {
+       guard let url = URL(string: "\(baseURL)/entities/\(entity)/\(id)") else {
+           throw URLError(.badURL)
+       }
+       var req = URLRequest(url: url)
+       req.httpMethod = "DELETE"
+       _ = try await session.data(for: req)
+   }
+}
