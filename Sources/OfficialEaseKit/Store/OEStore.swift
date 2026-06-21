@@ -15,10 +15,8 @@ public final class OEStore: ObservableObject {
         self.api = client
     }
 
-    // MARK: - Load All
     public func loadAll() async {
         isLoading = true
-        errorMsg  = nil
         officials   = await safeList(entity: "RefUser")
         games       = await safeList(entity: "OEGame")
         assignments = await safeList(entity: "OEAssignment")
@@ -26,24 +24,21 @@ public final class OEStore: ObservableObject {
     }
 
     private func safeList<T: Decodable>(entity: String) async -> [T] {
-        guard let result = try? await api.list(entity: entity) as [T] else {
-            return []
-        }
-        return result
+        let result: [T]? = try? await api.list(entity: entity)
+        return result ?? []
     }
 
-    // MARK: - Officials
     public func addOfficial(_ o: Official) async {
-        guard !o.full_name.isEmpty, !o.email.isEmpty else { return }
-        guard let created = try? await api.create(entity: "RefUser", body: o) as Official else { return }
-        [officials.app](https://officials.app)end(created)
+        guard !o.full_name.isEmpty else { return }
+        let created: Official? = try? await api.create(entity: "RefUser", body: o)
+        if let created = created { [officials.app](https://officials.app)end(created) }
     }
 
     public func updateOfficialStatus(id: String, status: String) async {
         struct Patch: Codable { let status: String }
-        guard let updated = try? await api.update(entity: "RefUser", id: id, body: Patch(status: status)) as Official else { return }
-        if let idx = officials.firstIndex(where: { $0.id == id }) {
-            officials[idx] = updated
+        let updated: Official? = try? await api.update(entity: "RefUser", id: id, body: Patch(status: status))
+        if let updated = updated {
+            if let idx = officials.firstIndex(where: { $0.id == id }) { officials[idx] = updated }
         }
     }
 
@@ -52,18 +47,17 @@ public final class OEStore: ObservableObject {
         officials.removeAll { $0.id == id }
     }
 
-    // MARK: - Games
     public func addGame(_ g: OEGame) async {
-        guard !g.home_team.isEmpty, !g.date.isEmpty else { return }
-        guard let created = try? await api.create(entity: "OEGame", body: g) as OEGame else { return }
-        [games.app](https://games.app)end(created)
+        guard !g.home_team.isEmpty else { return }
+        let created: OEGame? = try? await api.create(entity: "OEGame", body: g)
+        if let created = created { [games.app](https://games.app)end(created) }
     }
 
     public func updateGameStatus(id: String, status: String) async {
         struct Patch: Codable { let status: String }
-        guard let updated = try? await api.update(entity: "OEGame", id: id, body: Patch(status: status)) as OEGame else { return }
-        if let idx = games.firstIndex(where: { $0.id == id }) {
-            games[idx] = updated
+        let updated: OEGame? = try? await api.update(entity: "OEGame", id: id, body: Patch(status: status))
+        if let updated = updated {
+            if let idx = games.firstIndex(where: { $0.id == id }) { games[idx] = updated }
         }
     }
 
@@ -72,27 +66,26 @@ public final class OEStore: ObservableObject {
         games.removeAll { $0.id == id }
     }
 
-    // MARK: - Assignments
     public func assign(game: OEGame, official: Official) async {
         let a = OEAssignment(
-            game_id:       game.id,
-            game_title:    game.title,
-            game_date:     game.date,
-            official_id:   official.id,
+            game_id: game.id,
+            game_title: game.title,
+            game_date: game.date,
+            official_id: official.id,
             official_name: official.full_name,
-            role:          "Referee",
-            status:        "Assigned",
-            pay_amount:    game.pay_rate
+            role: "Referee",
+            status: "Assigned",
+            pay_amount: game.pay_rate
         )
-        guard let created = try? await api.create(entity: "OEAssignment", body: a) as OEAssignment else { return }
-        [assignments.app](https://assignments.app)end(created)
+        let created: OEAssignment? = try? await api.create(entity: "OEAssignment", body: a)
+        if let created = created { [assignments.app](https://assignments.app)end(created) }
     }
 
     public func updateAssignmentStatus(id: String, status: String) async {
         struct Patch: Codable { let status: String }
-        guard let updated = try? await api.update(entity: "OEAssignment", id: id, body: Patch(status: status)) as OEAssignment else { return }
-        if let idx = assignments.firstIndex(where: { $0.id == id }) {
-            assignments[idx] = updated
+        let updated: OEAssignment? = try? await api.update(entity: "OEAssignment", id: id, body: Patch(status: status))
+        if let updated = updated {
+            if let idx = assignments.firstIndex(where: { $0.id == id }) { assignments[idx] = updated }
         }
     }
 
@@ -101,26 +94,11 @@ public final class OEStore: ObservableObject {
         assignments.removeAll { $0.id == id }
     }
 
-    // MARK: - Computed Helpers
-    public var activeOfficials: [Official] {
-        officials.filter { $0.isActive }
-    }
-
-    public var scheduledGames: [OEGame] {
-        games.filter { $0.isUpcoming }
-    }
-
-    public var liveGames: [OEGame] {
-        games.filter { $0.isLive }
-    }
-
-    public var totalPaid: Double {
-        assignments.filter { $0.isPaid }.reduce(0) { $0 + $1.pay_amount }
-    }
-
-    public var pendingPay: Double {
-        assignments.filter { !$0.isPaid }.reduce(0) { $0 + $1.pay_amount }
-    }
+    public var activeOfficials: [Official]  { officials.filter { $0.isActive } }
+    public var scheduledGames:  [OEGame]    { games.filter { $0.isUpcoming } }
+    public var liveGames:       [OEGame]    { games.filter { $0.isLive } }
+    public var totalPaid:       Double      { assignments.filter { $0.isPaid }.reduce(0) { $0 + $1.pay_amount } }
+    public var pendingPay:      Double      { assignments.filter { !$0.isPaid }.reduce(0) { $0 + $1.pay_amount } }
 
     public func assignmentCount(for gameId: String) -> Int {
         assignments.filter { $0.game_id == gameId }.count
