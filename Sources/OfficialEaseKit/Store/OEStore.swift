@@ -19,14 +19,33 @@ public final class OEStore: ObservableObject {
    public func loadAll() async {
     isLoading = true
     errorMsg  = nil
-    let off:  [Official]     = (try? await api.list(entity: "RefUser"))      ?? []
-    let gm:   [OEGame]       = (try? await api.list(entity: "OEGame"))       ?? []
-    let asgn: [OEAssignment] = (try? await api.list(entity: "OEAssignment")) ?? []
+
+    let off: [Official] = await withTaskGroup(of: [Official].self) { group in
+        group.addTask { (try? await self.api.list(entity: "RefUser")) ?? [] }
+        var result: [Official] = []
+        for await r in group { result = r }
+        return result
+    }
+
+    let gm: [OEGame] = await withTaskGroup(of: [OEGame].self) { group in
+        group.addTask { (try? await self.api.list(entity: "OEGame")) ?? [] }
+        var result: [OEGame] = []
+        for await r in group { result = r }
+        return result
+    }
+
+    let asgn: [OEAssignment] = await withTaskGroup(of: [OEAssignment].self) { group in
+        group.addTask { (try? await self.api.list(entity: "OEAssignment")) ?? [] }
+        var result: [OEAssignment] = []
+        for await r in group { result = r }
+        return result
+    }
+
     officials   = off
     games       = gm
     assignments = asgn
     isLoading   = false
-   }
+	}
  
    // MARK: - Officials
    public func addOfficial(_ o: Official) async {
